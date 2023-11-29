@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Mail\AccountActivated;
 use App\Mail\AccountDeactivated;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -20,6 +21,11 @@ class LoyaltyAccount extends Model
         'phone_notification',
         'active',
     ];
+
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('active', true);
+    }
 
     public function getBalance(): float
     {

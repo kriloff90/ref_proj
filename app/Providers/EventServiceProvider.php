@@ -2,10 +2,18 @@
 
 namespace App\Providers;
 
+use App\Events\LoyaltyPointsTransactionCreated;
+
+use App\Listeners\LoyaltyPointsTransactionCreatedLog;
+use App\Listeners\LoyaltyPointsTransactionCreatedSendNotification;
+
+use App\Models\LoyaltyPointsTransaction;
+
+use App\Observers\LoyaltyPointsTransactionObserver;
+
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,6 +26,10 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        LoyaltyPointsTransactionCreated::class => [
+            LoyaltyPointsTransactionCreatedLog::class,
+            LoyaltyPointsTransactionCreatedSendNotification::class,
+        ],
     ];
 
     /**
@@ -27,6 +39,6 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        LoyaltyPointsTransaction::observe(LoyaltyPointsTransactionObserver::class);
     }
 }
