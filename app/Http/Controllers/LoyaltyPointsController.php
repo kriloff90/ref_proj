@@ -10,8 +10,6 @@ use App\Http\Resources\LoyaltyPointsTransactionResponse;
 
 use App\Models\LoyaltyPointsTransaction;
 
-use App\Services\LoyaltyAccountService;
-
 use Illuminate\Support\Facades\Log;
 
 class LoyaltyPointsController extends Controller
@@ -20,13 +18,8 @@ class LoyaltyPointsController extends Controller
     {
         Log::info('Deposit transaction input: ' . print_r($request->all(), true));
 
-        $account = LoyaltyAccountService::getActiveAccountOrFail(
-            $request->input('account_type'),
-            $request->input('account_id')
-        );
-
         $transaction = LoyaltyPointsTransaction::performPaymentLoyaltyPoints(
-            $account->id,
+            $request->input('loyaltyAccount')->id,
             $request->input('loyalty_points_rule'),
             $request->input('description'),
             $request->input('payment_id'),
@@ -39,10 +32,6 @@ class LoyaltyPointsController extends Controller
 
     public function cancel(LoyaltyPointsCancelRequest $request, LoyaltyPointsTransaction $transaction)
     {
-        if (!$transaction->canceled) {
-            abort(404, 'Transaction is not found');
-        }
-
         $transaction->update([
             'canceled' => time(),
             'cancellation_reason' => $request->input('cancellation_reason')
@@ -55,15 +44,8 @@ class LoyaltyPointsController extends Controller
     {
         Log::info('Withdraw loyalty points transaction input: ' . print_r($request->all(), true));
 
-        $account = LoyaltyAccountService::getActiveAccountOrFail(
-            $request->input('account_type'),
-            $request->input('account_id')
-        );
-
-        LoyaltyAccountService::checkBalance($account, (float) $request->input('points_amount'));
-
         return response(LoyaltyPointsTransactionResponse::make(LoyaltyPointsTransaction::withdrawLoyaltyPoints(
-            $account->id,
+            $request->input('loyaltyAccount')->id,
             $request->input('points_amount'),
             $request->input('description')
         )));

@@ -28,9 +28,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('account/balance/{type}/{id}', [AccountController::class, 'balance']);
 
     // loyalty points management
-    Route::post('loyaltyPoints/deposit', [LoyaltyPointsController::class, 'deposit']);
-    Route::post('loyaltyPoints/withdraw', [LoyaltyPointsController::class, 'withdraw']);
-    Route::post('loyaltyPoints/cancel/{transaction}', [LoyaltyPointsController::class, 'cancel']);
+    Route::middleware('loyalty_account.check_and_set')->group(function () {
+        Route::post('loyaltyPoints/deposit', [LoyaltyPointsController::class, 'deposit']);
+        Route::middleware('loyalty_account.check_balance')
+            ->post('loyaltyPoints/withdraw', [LoyaltyPointsController::class, 'withdraw']);
+    });
+    Route::middleware('transaction.check_canceled')
+        ->post('loyaltyPoints/cancel/{transaction}', [LoyaltyPointsController::class, 'cancel']);
 });
 
 
